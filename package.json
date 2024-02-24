@@ -1,6 +1,6 @@
 {
   "name": "collection-helpers",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "This is a typesafe collection helpers for TS which also includes some functions which has curried alternatives",
   "main": "index.ts",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/i-void/collection-helpers.git"
+    "url": "git://github.com/i-void/collection-helpers.git"
   },
   "author": "Onur Eren Elibol",
   "license": "CC0-1.0",

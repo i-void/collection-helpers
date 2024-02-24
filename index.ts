@@ -21,4 +21,5 @@ export * from './reduceAsync';
 export * from './reduceWhen';
 export * from './reduceWhenAsync';
 export * from './reject';
+export * from './sort';
 export * from './typeChecks';
