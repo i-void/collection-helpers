@@ -53,6 +53,27 @@ export function cIncludes(value: unknown): (collection: any) => boolean {
   return (collection: any) => includes(collection, value);
 }
 
+export function exclude<T>(set: Set<T>, values: T[]): Set<T>;
+export function exclude<T>(arr: T[], values: T[]): T[];
+
+export function exclude<T>(collection: Set<T> | T[], values: T[]): unknown {
+  if (isArray(collection)) {
+    return collection.filter(item => !values.includes(item));
+  } else if (isSet(collection)) {
+    return new Set(Array.from(collection).filter(item => !values.includes(item)));
+  } else {
+    throw new Error('Unsupported collection type');
+  }
+}
+
+// curried version
+export function cExclude<T>(values: T[]): (set: Set<T>) => Set<T>;
+export function cExclude<T>(values: T[]): (arr: T[]) => T[];
+
+export function cExclude<T>(values: T[]): any {
+  return (collection: any) => exclude(collection, values);
+}
+
 
 export function compact<T>(set: Set<T>): Set<T>;
 export function compact<T>(arr: T[]): T[];
