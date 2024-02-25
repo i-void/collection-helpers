@@ -67,11 +67,9 @@ export function exclude<T>(collection: Set<T> | T[], values: T[]): unknown {
 }
 
 // curried version
-export function cExclude<T>(values: T[]): (set: Set<T>) => Set<T>;
-export function cExclude<T>(values: T[]): (arr: T[]) => T[];
-
-export function cExclude<T>(values: T[]): any {
-  return (collection: any) => exclude(collection, values);
+export function cExclude<T>(values: T[]) {
+  return <C extends Set<T> | T[]>(collection: C): C => 
+    exclude(collection as any, values) as any;
 }
 
 
