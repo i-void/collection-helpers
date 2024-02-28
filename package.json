@@ -15,5 +15,17 @@
   "bugs": {
     "url": "https://github.com/i-void/collection-helpers/issues"
   },
-  "homepage": "https://github.com/i-void/collection-helpers#readme"
+  "homepage": "https://github.com/i-void/collection-helpers#readme",
+  "dependencies": {
+    "@types/ramda": "^0.29.10",
+    "ramda": "^0.29.1",
+    "remeda": "^1.44.1",
+    "ts-toolbelt": "^9.6.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.0.7"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
 }

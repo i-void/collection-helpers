@@ -1,3 +1,4 @@
+import { purry } from "remeda";
 import { isArray, isSet } from ".";
 
 export function first<T>(set: Set<T>): T | undefined;
@@ -31,11 +32,14 @@ export function last(collection: unknown): unknown {
   }
 }
 
-
+export function includes<T>(value: T): (set: Set<T>) => boolean;
 export function includes<T>(set: Set<T>, value: T): boolean;
 export function includes<T>(arr: T[], value: T): boolean;
+export function includes() {
+  return purry(_includes, arguments);
+}
 
-export function includes(collection: unknown, value: unknown): boolean {
+export function _includes(collection: unknown, value: unknown): boolean {
   if (isArray(collection)) {
     return collection.includes(value);
   } else if (isSet(collection)) {
@@ -45,18 +49,14 @@ export function includes(collection: unknown, value: unknown): boolean {
   }
 }
 
-// curried version
-export function cIncludes<T>(value: T): (set: Set<T>) => boolean;
-export function cIncludes<T>(value: T): (arr: T[]) => boolean;
-
-export function cIncludes(value: unknown): (collection: any) => boolean {
-  return (collection: any) => includes(collection, value);
-}
-
+export function exclude<T>(values: T[]): (set: Set<T>) => Set<T>;
 export function exclude<T>(set: Set<T>, values: T[]): Set<T>;
 export function exclude<T>(arr: T[], values: T[]): T[];
+export function exclude() {
+  return purry(_exclude, arguments);
+}
 
-export function exclude<T>(collection: Set<T> | T[], values: T[]): unknown {
+export function _exclude<T>(collection: Set<T> | T[], values: T[]) {
   if (isArray(collection)) {
     return collection.filter(item => !values.includes(item));
   } else if (isSet(collection)) {
@@ -64,12 +64,6 @@ export function exclude<T>(collection: Set<T> | T[], values: T[]): unknown {
   } else {
     throw new Error('Unsupported collection type');
   }
-}
-
-// curried version
-export function cExclude<T>(values: T[]) {
-  return <C extends Set<T> | T[]>(collection: C): C => 
-    exclude(collection as any, values) as any;
 }
 
 
@@ -115,12 +109,19 @@ export function size(collection: unknown): number {
 }
 
 
+export function zip<T>(set2: Set<T>): (set1: Set<T>) => Set<[T, T]>;
+export function zip<T>(set: Set<T>): (arr: T[]) => Set<[T, T]>;
+export function zip<T>(arr: T[]): (set: Set<T>) => [T, T][];
+export function zip<T>(arr2: T[]): (arr: T[]) => [T, T][];
 export function zip<T>(set1: Set<T>, set2: Set<T>): Set<[T, T]>;
 export function zip<T>(set: Set<T>, arr: T[]): Set<[T, T]>;
 export function zip<T>(arr: T[], set: Set<T>): [T, T][];
 export function zip<T>(arr1: T[], arr2: T[]): [T, T][];
+export function zip() {
+  return purry(_zip, arguments);
+}
 
-export function zip(collection1: unknown, collection2: unknown): unknown {
+export function _zip(collection1: unknown, collection2: unknown): unknown {
   if (isArray(collection1) && isArray(collection2)) {
     return collection1.map((item, index) => [item, collection2[index]]);
   } else if (isSet(collection1) && isSet(collection2)) {
@@ -149,16 +150,6 @@ export function zip(collection1: unknown, collection2: unknown): unknown {
     throw new Error('Unsupported collection type');
   }
 }
-
-// curried version
-export function cZip<T>(set2: Set<T>): (set1: Set<T>) => Set<[T, T]>;
-export function cZip<T>(set: Set<T>): (arr: T[]) => Set<[T, T]>;
-export function cZip<T>(arr: T[]): (set: Set<T>) => [T, T][];
-export function cZip<T>(arr2: T[]): (arr: T[]) => [T, T][];
-export function cZip(collection1: any): any {
-  return (collection2: any) => zip(collection2, collection1);
-}
-
 
 export function zip3<T>(set1: Set<T>, set2: Set<T>, set3: Set<T>): Set<[T, T, T]>;
 export function zip3<T>(arr1: T[], arr2: T[], arr3: T[]): [T, T, T][];
@@ -234,10 +225,14 @@ export function sum(collection: Set<number> | number[]): number {
 }
 
 
+export function take<T>(count: number, from?: number): (set: Set<T>) => Set<T>;
 export function take<T>(set: Set<T>, count: number, from?: number): Set<T>;
 export function take<T>(arr: T[], count: number, from?: number): T[];
+export function take() {
+  return purry(_take, arguments);
+}
 
-export function take<T>(collection: Set<T> | T[], count: number, from = 0): unknown {
+export function _take<T>(collection: Set<T> | T[], count: number, from = 0): unknown {
   if (isArray(collection)) {
     return collection.slice(from, count + from);
   } else if (isSet(collection)) {
@@ -250,14 +245,6 @@ export function take<T>(collection: Set<T> | T[], count: number, from = 0): unkn
   } else {
     throw new Error('Unsupported collection type');
   }
-}
-
-// curried version
-export function cTake<T>(count: number, from?: number): (set: Set<T>) => Set<T>;
-export function cTake<T>(count: number, from?: number): (arr: T[]) => T[];
-
-export function cTake(count: number, from = 0): unknown {
-  return (collection: any) => take(collection, count, from);
 }
 
 

@@ -1,0 +1,14 @@
+export type RecKey = string | number | symbol;
+export type ArrLike<V> = Set<V> | V[];
+export type ArrFn<T, O> = (item: T, index: number) => O;
+export type ArrAsyncFn<T, O> = (item: T, index: number) => Promise<O>;
+export type MapFn<K, V, O> = (entry: { key: K, value: V }, index: number) => O;
+export type MapAsyncFn<K, V, O> = (entry: { key: K, value: V }, index: number) => Promise<O>;
+export type ArrAccFn<V, O> = (accumulator: O, item: V, index: number) => O;
+export type ArrCondFn<V> = (item: V, index: number) => boolean;
+export type ArrAsyncCondFn<V> = (item: V, index: number) => Promise<boolean>; 
+export type ArrAsyncAccFn<V, O> = (accumulator: O, item: V, index: number) => Promise<O>;
+export type MapAccFn<K, V, O> = (accumulator: O, entry: { key: K, value: V }, index: number) => O;
+export type MapCondFn<K, V> = (entry: { key: K, value: V }, index: number) => boolean;
+export type MapAsyncCondFn<K, V> = (entry: { key: K, value: V }, index: number) => Promise<boolean>;
+export type MapAsyncAccFn<K, V, O> = (accumulator: O, entry: { key: K, value: V }, index: number) => Promise<O>;
