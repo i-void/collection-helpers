@@ -1,14 +1,16 @@
 import { purry, isArray } from "remeda";
-import { type ArrCondFn, type ArrLike, isSet, type RecKey, type MapCondFn, isMap, isRecord, type ArrAsyncCondFn, type MapAsyncCondFn } from "..";
+import { type ArrCondFn, type ArrLike, isSet, type RecKey, type MapCondFn, isMap, isRecord, type ArrAsyncCondFn, type MapAsyncCondFn, type Collection, type CollectionFn } from ".";
 
-export function any<V>(fn: ArrCondFn<V>): (obj: ArrLike<V>) => boolean;
+export function any<T extends Collection, F extends CollectionFn<T>>(fn: F): (collection: T) => boolean;
 export function any<V>(set: Set<V>, fn: ArrCondFn<V>): boolean;
-export function any<T>(arr: T[], fn: ArrCondFn<T>): boolean;
+export function any<T>(arr: ArrLike<T>, fn: ArrCondFn<T>): boolean;
+export function any<K, V>(map: Map<K, V>, fn: MapCondFn<K, V>): boolean;
+export function any<K extends RecKey, V>(obj: Record<K, V>, fn: MapCondFn<K, V>): boolean;
 export function any() {
   return purry(_any, arguments);
 }
 
-function _any<V>(collection: ArrLike<V>, fn: ArrCondFn<V>): boolean {
+function _any<T extends Collection, F extends CollectionFn<T>>(collection: T, fn: F): boolean {
   if (isArray(collection) || isSet(collection)) {
     let i = 0;
     for (const item of collection) {
@@ -16,32 +18,16 @@ function _any<V>(collection: ArrLike<V>, fn: ArrCondFn<V>): boolean {
       i++;
     }
     return false;
-  } else {
-    throw new Error('Unsupported collection type');
-  }
-}
-
-
-export function anyObj<K extends RecKey, V>(fn: MapCondFn<K, V>): (obj: Record<K, V> | Map<K, V>) => boolean;
-export function anyObj<K, V>(map: Map<K, V>, fn: MapCondFn<K, V>): boolean;
-export function anyObj<K extends RecKey, V>(obj: Record<K, V>, fn: MapCondFn<K, V>): boolean;
-export function anyObj() {
-  return purry(_anyObj, arguments);
-}
-
-function _anyObj<K extends RecKey, V>(mapLike: Record<K, V> | Map<K, V>, fn: MapCondFn<K, V>): boolean {
-  if (isMap(mapLike)) {
+  } else if (isMap(collection)) {
     let i = 0;
-    for (const [key, value] of mapLike) {
+    for (const [key, value] of collection) {
       if (fn({ key, value }, i)) return true;
       i++;
     }
     return false;
-  } else if (isRecord(mapLike)) {
+  } else if (isRecord(collection)) {
     let i = 0;
-    for (const ml of Object.entries(mapLike)) {
-      const key = ml[0] as K;
-      const value = ml[1] as V;
+    for (const [key, value] of Object.entries(collection)) {
       if (fn({ key, value }, i)) return true;
       i++;
     }
@@ -52,14 +38,16 @@ function _anyObj<K extends RecKey, V>(mapLike: Record<K, V> | Map<K, V>, fn: Map
 }
 
 
-export function anyAsync<V>(fn: ArrAsyncCondFn<V>): (obj: ArrLike<V>) => Promise<boolean>;
+export function anyAsync<T extends Collection, F extends CollectionFn<T>>(fn: F): (collection: T) => Promise<boolean>;
 export function anyAsync<V>(set: Set<V>, fn: ArrAsyncCondFn<V>): Promise<boolean>;
-export function anyAsync<T>(arr: T[], fn: ArrAsyncCondFn<T>): Promise<boolean>;
+export function anyAsync<T>(arr: ArrLike<T>, fn: ArrAsyncCondFn<T>): Promise<boolean>;
+export function anyAsync<K, V>(map: Map<K, V>, fn: MapAsyncCondFn<K, V>): Promise<boolean>;
+export function anyAsync<K extends RecKey, V>(obj: Record<K, V>, fn: MapAsyncCondFn<K, V>): Promise<boolean>;
 export function anyAsync() {
   return purry(_anyAsync, arguments);
 }
 
-async function _anyAsync<V>(collection: ArrLike<V>, fn: ArrAsyncCondFn<V>): Promise<boolean> {
+async function _anyAsync<T extends Collection, F extends CollectionFn<T>>(collection: T, fn: F): Promise<boolean> {
   if (isArray(collection) || isSet(collection)) {
     let i = 0;
     for (const item of collection) {
@@ -67,32 +55,16 @@ async function _anyAsync<V>(collection: ArrLike<V>, fn: ArrAsyncCondFn<V>): Prom
       i++;
     }
     return false;
-  } else {
-    throw new Error('Unsupported collection type');
-  }
-}
-
-
-export function anyObjAsync<K extends RecKey, V>(fn: MapAsyncCondFn<K, V>): (obj: Record<K, V> | Map<K, V>) => Promise<boolean>;
-export function anyObjAsync<K, V>(map: Map<K, V>, fn: MapAsyncCondFn<K, V>): Promise<boolean>;
-export function anyObjAsync<K extends RecKey, V>(obj: Record<K, V>, fn: MapAsyncCondFn<K, V>): Promise<boolean>;
-export function anyObjAsync() {
-  return purry(_anyObjAsync, arguments);
-}
-
-async function _anyObjAsync<K extends RecKey, V>(mapLike: Record<K, V> | Map<K, V>, fn: MapAsyncCondFn<K, V>): Promise<boolean> {
-  if (isMap(mapLike)) {
+  } else if (isMap(collection)) {
     let i = 0;
-    for (const [key, value] of mapLike) {
+    for (const [key, value] of collection) {
       if (await fn({ key, value }, i)) return true;
       i++;
     }
     return false;
-  } else if (isRecord(mapLike)) {
+  } else if (isRecord(collection)) {
     let i = 0;
-    for (const ml of Object.entries(mapLike)) {
-      const key = ml[0] as K;
-      const value = ml[1] as V;
+    for (const [key, value] of Object.entries(collection)) {
       if (await fn({ key, value }, i)) return true;
       i++;
     }
@@ -101,4 +73,3 @@ async function _anyObjAsync<K extends RecKey, V>(mapLike: Record<K, V> | Map<K, 
     throw new Error('Unsupported collection type');
   }
 }
-

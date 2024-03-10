@@ -27,7 +27,7 @@ export function isPresent<T>(value: T | undefined | null): value is T {
 }
 
 // Checks if a value is an array
-export function isArray(value: unknown): value is Array<unknown> {
+export function isArray(value: unknown): value is unknown[] | ReadonlyArray<unknown> {
   return Array.isArray(value);
 }
 
@@ -36,7 +36,6 @@ export function isSet(value: unknown): value is Set<unknown> {
   return value instanceof Set;
 }
 
-// Checks if a value is a Map
 export function isMap(value: unknown): value is Map<unknown, unknown> {
   return value instanceof Map;
 }

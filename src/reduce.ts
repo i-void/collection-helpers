@@ -1,99 +1,66 @@
 import {
-  isArray, isMap, isRecord, isSet, 
-  type ArrAccFn, type ArrLike, type RecKey, type MapAccFn, type ArrAsyncAccFn, type MapAsyncAccFn, type ArrCondFn, type MapCondFn
-} from "..";
-import { purry, reduce as rReduce, reject as rReject } from "remeda";
+  isArray, isMap, isRecord, isSet,
+  type ArrAccFn, type RecKey, type MapAccFn,
+  type ArrAsyncAccFn, type MapAsyncAccFn, type ArrCondFn, type MapCondFn, type Collection, type CollectionReduceFn, type CollectionAsyncReduceFn, type CollectionCondFn, type CollectionAsyncCondFn, type ArrAsyncCondFn, type MapAsyncCondFn
+} from ".";
+import { purry, reduce as rReduce } from "remeda";
 
-export function reduce<V, O>(fn: ArrAccFn<V, O>, initialValue: O): (obj: ArrLike<V>) => O;
-export function reduce<I, O>(set: Set<I>, fn: ArrAccFn<I, O>, initialValue: O): O;
-export function reduce<T, O>(arr: T[], fn: ArrAccFn<T, O>, initialValue: O): O;
+export function reduce<T extends Collection, R, F extends CollectionReduceFn<T, R>>(fn: F, initial: R): (collection: T) => R;
+export function reduce<V, R>(set: Set<V>, fn: ArrAccFn<V, R>, initial: R): R;
+export function reduce<V, R>(arr: Array<V>, fn: ArrAccFn<V, R>, initial: R): R;
+export function reduce<V, R>(arr: ReadonlyArray<V>, fn: ArrAccFn<V, R>, initial: R): R;
+export function reduce<K, V, R>(map: Map<K, V>, fn: MapAccFn<K, V, R>, initial: R): R;
+export function reduce<K extends RecKey, V, R>(obj: Record<K, V>, fn: MapAccFn<K, V, R>, initial: R): R;
 export function reduce() {
   return purry(_reduce, arguments);
 }
 
-function _reduce<V, O>(collection: ArrLike<V>, fn: ArrAccFn<V, O>, initialValue: O): O {
+function _reduce<T extends Collection, R, F extends CollectionReduceFn<T, R>>(collection: T, fn: F, initial: R): R {
+  let accumulator: R = initial;
   if (isArray(collection)) {
-    return rReduce.indexed(collection, fn as ArrAccFn<V, O>, initialValue); 
+    return rReduce.indexed(collection, fn, accumulator);
   } else if (isSet(collection)) {
-    return rReduce.indexed(Array.from(collection), fn as ArrAccFn<V, O>, initialValue); 
+    return Array.from(collection).reduce(fn, accumulator);
+  } else if (isMap(collection)) {
+    return Array.from(collection).reduce((acc, [key, value], i) => fn(acc, { key, value }, i), accumulator);
+  } else if (isRecord(collection)) {
+    return Object.entries(collection).reduce((acc, [key, value], i) => fn(acc, { key, value }, i), accumulator);
   } else {
     throw new Error('Unsupported collection type');
   }
 }
 
-
-export function reduceObj<K extends RecKey, V, O>(fn: MapAccFn<K, V, O>, initialValue: O): (obj: Record<K, V> | Map<K, V>) => O;
-export function reduceObj<K, V, O>(fn: MapAccFn<K, V, O>, initialValue: O): (map: Map<K, V>) => O;
-export function reduceObj<K, V, O>(map: Map<K, V>, fn: MapAccFn<K, V, O>, initialValue: O): O;
-export function reduceObj<K extends RecKey, V, O>(obj: Record<K, V>, fn: MapAccFn<K, V, O>, initialValue: O): O;
-export function reduceObj() {
-  return purry(_reduceObj, arguments);
-}
-
-function _reduceObj<K extends RecKey, V, O>(mapLike: Record<K, V> | Map<K, V>, fn: MapAccFn<K, V, O>, initialValue: O): O {
-  if (isMap(mapLike)) {
-    return rReduce.indexed(
-      Array.from(mapLike),
-      (acc, [key, value], i) => (fn as MapAccFn<K, V, O>)(acc, { key, value }, i),
-      initialValue
-    );
-  } else if (isRecord(mapLike)) {
-    return rReduce.indexed(
-      Object.entries(mapLike) as [K, V][],
-      (acc, [key, value], i) => (fn as MapAccFn<K, V, O>)(acc, { key, value }, i),
-      initialValue
-    );
-  } else {
-    throw new Error('Unsupported collection type');
-  }
-}
-
-
-export function reduceAsync<V, O>(fn: ArrAsyncAccFn<V, O>, initialValue: O): (obj: ArrLike<V>) => Promise<O>;
-export function reduceAsync<I, O>(set: Set<I>, fn: ArrAsyncAccFn<I, O>, initialValue: O): Promise<O>;
-export function reduceAsync<T, O>(arr: T[], fn: ArrAsyncAccFn<T, O>, initialValue: O): Promise<O>;
+export function reduceAsync<T extends Collection, R, F extends CollectionAsyncReduceFn<T, R>>(fn: F, initial: R): (collection: T) => Promise<R>;
+export function reduceAsync<V, R>(set: Set<V>, fn: ArrAsyncAccFn<V, R>, initial: R): Promise<R>;
+export function reduceAsync<V, R>(arr: Array<V>, fn: ArrAsyncAccFn<V, R>, initial: R): Promise<R>;
+export function reduceAsync<V, R>(arr: ReadonlyArray<V>, fn: ArrAsyncAccFn<V, R>, initial: R): Promise<R>;
+export function reduceAsync<K, V, R>(map: Map<K, V>, fn: MapAsyncAccFn<K, V, R>, initial: R): Promise<R>;
+export function reduceAsync<K extends RecKey, V, R>(obj: Record<K, V>, fn: MapAsyncAccFn<K, V, R>, initial: R): Promise<R>;
 export function reduceAsync() {
   return purry(_reduceAsync, arguments);
 }
 
-async function _reduceAsync<V, O>(collection: ArrLike<V>, fn: ArrAsyncAccFn<V, O>, initialValue: O): Promise<O> {
+async function _reduceAsync<T extends Collection, R, F extends CollectionAsyncReduceFn<T, R>>(collection: T, fn: F, initial: R): Promise<R> {
   if (isArray(collection) || isSet(collection)) {
     let i = 0;
-    let result: O = initialValue 
+    let result: R = initial
     for (const item of collection) {
       result = await fn(result, item, i);
       i++;
     }
     return result;
-  } else {
-    throw new Error('Unsupported collection type');
-  }
-}
-
-
-export function reduceObjAsync<K extends RecKey, V, O>(fn: MapAsyncAccFn<K, V, O>, initialValue: O): (obj: Record<K, V> | Map<K, V>) => Promise<O>;
-export function reduceObjAsync<K, V, O>(fn: MapAsyncAccFn<K, V, O>, initialValue: O): (map: Map<K, V>) => Promise<O>;
-export function reduceObjAsync<K, V, O>(map: Map<K, V>, fn: MapAsyncAccFn<K, V, O>, initialValue: O): Promise<O>;
-export function reduceObjAsync<K extends RecKey, V, O>(obj: Record<K, V>, fn: MapAsyncAccFn<K, V, O>, initialValue: O): Promise<O>;
-export function reduceObjAsync() {
-  return purry(_reduceObjAsync, arguments);
-}
-
-async function _reduceObjAsync<K extends RecKey, V, O>(mapLike: Record<K, V> | Map<K, V>, fn: MapAsyncAccFn<K, V, O>, initialValue: O): Promise<O> {
-  if (isMap(mapLike)) {
+  } else if (isRecord(collection)) {
     let i = 0;
-    let result: O = initialValue 
-    for (const [key, value] of mapLike) {
+    let result: R = initial
+    for (const [key, value] of Object.entries(collection)) {
       result = await fn(result, { key, value }, i);
       i++;
     }
     return result;
-  } else if (isRecord(mapLike)) {
+  } else if (isMap(collection)) {
     let i = 0;
-    let result: O = initialValue 
-    for (const ml of Object.entries(mapLike)) {
-      const key = ml[0] as K;
-      const value = ml[1] as V;
+    let result: R = initial
+    for (const [key, value] of collection) {
       result = await fn(result, { key, value }, i);
       i++;
     }
@@ -104,117 +71,67 @@ async function _reduceObjAsync<K extends RecKey, V, O>(mapLike: Record<K, V> | M
 }
 
 
-export function reduceWhen<V, O>(condFn: ArrCondFn<V>, fn: ArrAccFn<V, O>, initialValue: O): (obj: ArrLike<V>) => O;
-export function reduceWhen<I, O>(set: Set<I>, condFn: ArrCondFn<I>, fn: ArrAccFn<I, O>, initialValue: O): O;
-export function reduceWhen<T, O>(arr: T[], condFn: ArrCondFn<T>, fn: ArrAccFn<T, O>, initialValue: O): O;
+export function reduceWhen<T extends Collection, R, C extends CollectionCondFn<T>, F extends CollectionReduceFn<T, R>>(condFn: C, fn: F, initial: R): (collection: T) => R;
+export function reduceWhen<V, R>(set: Set<V>, condFn: ArrCondFn<V>, fn: ArrAccFn<V, R>, initial: R): R;
+export function reduceWhen<V, R>(arr: Array<V>, condFn: ArrCondFn<V>, fn: ArrAccFn<V, R>, initial: R): R;
+export function reduceWhen<V, R>(arr: ReadonlyArray<V>, condFn: ArrCondFn<V>, fn: ArrAccFn<V, R>, initial: R): R;
+export function reduceWhen<K, V, R>(map: Map<K, V>, condFn: MapCondFn<K, V>, fn: MapAccFn<K, V, R>, initial: R): R;
+export function reduceWhen<K extends RecKey, V, R>(obj: Record<K, V>, condFn: MapCondFn<K, V>, fn: MapAccFn<K, V, R>, initial: R): R;
 export function reduceWhen() {
   return purry(_reduceWhen, arguments);
 }
 
-function _reduceWhen<V, O>(collection: ArrLike<V>, condFn: ArrCondFn<V>, fn: ArrAccFn<V, O>, initialValue: O): O {
-  if (isArray(collection) || isSet(collection)) {
-    let i = 0;
-    let result: O = initialValue 
-    for (const item of collection) {
-      if (condFn(item, i)) {
-        result = fn(result, item, i);
-      }
-      i++;
-    }
-    return result;
+function _reduceWhen<T extends Collection, R, C extends CollectionCondFn<T>, F extends CollectionReduceFn<T, R>>(collection: T, condFn: C, fn: F, initial: R): R {
+  let accumulator: R = initial;
+  if (isArray(collection)) {
+    return rReduce.indexed(collection, (acc, value, i) => condFn(value, i) ? fn(acc, value, i) : acc, accumulator);
+  } else if (isSet(collection)) {
+    return Array.from(collection).reduce((acc, value, i) => condFn(value, i) ? fn(acc, value, i) : acc, accumulator);
+  } else if (isMap(collection)) {
+    return Array.from(collection).reduce((acc, [key, value], i) => condFn({ key, value }, i) ? fn(acc, { key, value }, i) : acc, accumulator);
+  } else if (isRecord(collection)) {
+    return Object.entries(collection).reduce((acc, [key, value], i) => condFn({ key, value }, i) ? fn(acc, { key, value }, i) : acc, accumulator);
   } else {
     throw new Error('Unsupported collection type');
   }
 }
 
 
-export function reduceObjWhen<K extends RecKey, V, O>(condFn: MapCondFn<K, V>, fn: MapAccFn<K, V, O>, initialValue: O): (obj: Record<K, V> | Map<K, V>) => O;
-export function reduceObjWhen<K, V, O>(condFn: MapCondFn<K, V>, fn: MapAccFn<K, V, O>, initialValue: O): (map: Map<K, V>) => O;
-export function reduceObjWhen<K, V, O>(map: Map<K, V>, condFn: MapCondFn<K, V>, fn: MapAccFn<K, V, O>, initialValue: O): O;
-export function reduceObjWhen<K extends RecKey, V, O>(obj: Record<K, V>, condFn: MapCondFn<K, V>, fn: MapAccFn<K, V, O>, initialValue: O): O;
-export function reduceObjWhen() {
-  return purry(_reduceObjWhen, arguments);
-}
-
-function _reduceObjWhen<K extends RecKey, V, O>(mapLike: Record<K, V> | Map<K, V>, condFn: MapCondFn<K, V>, fn: MapAccFn<K, V, O>, initialValue: O): O {
-  if (isMap(mapLike)) {
-    let i = 0;
-    let result: O = initialValue 
-    for (const [key, value] of mapLike) {
-      if (condFn({ key, value }, i)) {
-        result = fn(result, { key, value }, i);
-      }
-      i++;
-    }
-    return result;
-  } else if (isRecord(mapLike)) {
-    let i = 0;
-    let result: O = initialValue 
-    for (const ml of Object.entries(mapLike)) {
-      const key = ml[0] as K;
-      const value = ml[1] as V;
-      if (condFn({ key, value }, i)) {
-        result = fn(result, { key, value }, i);
-      }
-      i++;
-    }
-    return result;
-  } else {
-    throw new Error('Unsupported collection type');
-  }
-}
-
-
-export function reduceWhenAsync<V, O>(condFn: ArrCondFn<V>, fn: ArrAsyncAccFn<V, O>, initialValue: O): (obj: ArrLike<V>) => Promise<O>;
-export function reduceWhenAsync<I, O>(set: Set<I>, condFn: ArrCondFn<I>, fn: ArrAsyncAccFn<I, O>, initialValue: O): Promise<O>;
-export function reduceWhenAsync<T, O>(arr: T[], condFn: ArrCondFn<T>, fn: ArrAsyncAccFn<T, O>, initialValue: O): Promise<O>;
+export function reduceWhenAsync<T extends Collection, R, C extends CollectionAsyncCondFn<T>, F extends CollectionAsyncReduceFn<T, R>>(condFn: C, fn: F, initial: R): (collection: T) => Promise<R>;
+export function reduceWhenAsync<V, R>(set: Set<V>, condFn: ArrAsyncCondFn<V>, fn: ArrAsyncAccFn<V, R>, initial: R): Promise<R>;
+export function reduceWhenAsync<V, R>(arr: V[], condFn: ArrAsyncCondFn<V>, fn: ArrAsyncAccFn<V, R>, initial: R): Promise<R>;
+export function reduceWhenAsync<K, V, R>(map: Map<K, V>, condFn: MapAsyncCondFn<K, V>, fn: MapAsyncAccFn<K, V, R>, initial: R): Promise<R>;
+export function reduceWhenAsync<K extends RecKey, V, R>(obj: Record<K, V>, condFn: MapAsyncCondFn<K, V>, fn: MapAsyncAccFn<K, V, R>, initial: R): Promise<R>;
 export function reduceWhenAsync() {
   return purry(_reduceWhenAsync, arguments);
 }
 
-async function _reduceWhenAsync<V, O>(collection: ArrLike<V>, condFn: ArrCondFn<V>, fn: ArrAsyncAccFn<V, O>, initialValue: O): Promise<O> {
+async function _reduceWhenAsync<T extends Collection, R, C extends CollectionAsyncCondFn<T>, F extends CollectionAsyncReduceFn<T, R>>(collection: T, condFn: C, fn: F, initial: R): Promise<R> {
   if (isArray(collection) || isSet(collection)) {
     let i = 0;
-    let result: O = initialValue 
+    let result: R = initial
     for (const item of collection) {
-      if (condFn(item, i)) {
+      if (await condFn(item, i)) {
         result = await fn(result, item, i);
       }
       i++;
     }
     return result;
-  } else {
-    throw new Error('Unsupported collection type');
-  }
-}
-
-
-export function reduceObjWhenAsync<K extends RecKey, V, O>(condFn: MapCondFn<K, V>, fn: MapAsyncAccFn<K, V, O>, initialValue: O): (obj: Record<K, V> | Map<K, V>) => Promise<O>;
-export function reduceObjWhenAsync<K, V, O>(condFn: MapCondFn<K, V>, fn: MapAsyncAccFn<K, V, O>, initialValue: O): (map: Map<K, V>) => Promise<O>;
-export function reduceObjWhenAsync<K, V, O>(map: Map<K, V>, condFn: MapCondFn<K, V>, fn: MapAsyncAccFn<K, V, O>, initialValue: O): Promise<O>;
-export function reduceObjWhenAsync<K extends RecKey, V, O>(obj: Record<K, V>, condFn: MapCondFn<K, V>, fn: MapAsyncAccFn<K, V, O>, initialValue: O): Promise<O>;
-export function reduceObjWhenAsync() {
-  return purry(_reduceObjWhenAsync, arguments);
-}
-
-async function _reduceObjWhenAsync<K extends RecKey, V, O>(mapLike: Record<K, V> | Map<K, V>, condFn: MapCondFn<K, V>, fn: MapAsyncAccFn<K, V, O>, initialValue: O): Promise<O> {
-  if (isMap(mapLike)) {
+  } else if (isRecord(collection)) {
     let i = 0;
-    let result: O = initialValue 
-    for (const [key, value] of mapLike) {
-      if (condFn({ key, value }, i)) {
+    let result: R = initial
+    for (const [key, value] of Object.entries(collection)) {
+      if (await condFn({ key, value }, i)) {
         result = await fn(result, { key, value }, i);
       }
       i++;
     }
     return result;
-  } else if (isRecord(mapLike)) {
+  } else if (isMap(collection)) {
     let i = 0;
-    let result: O = initialValue 
-    for (const ml of Object.entries(mapLike)) {
-      const key = ml[0] as K;
-      const value = ml[1] as V;
-      if (condFn({ key, value }, i)) {
+    let result: R = initial
+    for (const [key, value] of collection) {
+      if (await condFn({ key, value }, i)) {
         result = await fn(result, { key, value }, i);
       }
       i++;
@@ -224,4 +141,3 @@ async function _reduceObjWhenAsync<K extends RecKey, V, O>(mapLike: Record<K, V>
     throw new Error('Unsupported collection type');
   }
 }
-
