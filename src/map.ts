@@ -1,7 +1,7 @@
 import { isArray, isMap, isRecord, isSet, type ArrFn, type RecKey, type MapFn, type CollectionFn, type Collection, type CollectionAsyncFn, type ArrCondFn, type MapCondFn, type CollectionCondFn, type CollectionAsyncCondFn, type ArrAsyncCondFn, type MapAsyncCondFn } from ".";
 import { purry, map as rMap } from "remeda";
 
-export function map<T extends Collection, F extends CollectionFn<T>, O = ReturnType<F>>(fn: F): (collection: T) => O[];
+export function map<T extends Collection, F extends CollectionFn<T>, O extends ReturnType<F>>(fn: F): (collection: T) => O[];
 export function map<V, O>(set: Set<V>, fn: ArrFn<V, O>): O[];
 export function map<V, O>(arr: Array<V>, fn: ArrFn<V, O>): O[];
 export function map<V, O>(arr: ReadonlyArray<V>, fn: ArrFn<V, O>): O[];
@@ -10,7 +10,7 @@ export function map<K extends RecKey, V, O>(obj: Record<K, V>, fn: MapFn<K, V, O
 export function map() {
   return purry(_map, arguments);
 }
-function _map<T extends Collection, F extends CollectionFn<T>, O = ReturnType<F>>(collection: T, fn: F): O[] {
+function _map<T extends Collection, F extends CollectionFn<T>, O extends ReturnType<F>>(collection: T, fn: F): O[] {
   if (isArray(collection)) {
     return rMap.indexed(collection, fn)
   } else if (isSet(collection)) {
@@ -31,7 +31,7 @@ function _map<T extends Collection, F extends CollectionFn<T>, O = ReturnType<F>
 }
 
 
-export function mapAsyncAll<T extends Collection, F extends CollectionAsyncFn<T>, O = Awaited<ReturnType<F>>>(fn: F): (collection: T) => Promise<O[]>;
+export function mapAsyncAll<T extends Collection, F extends CollectionAsyncFn<T>, O extends Awaited<ReturnType<F>>>(fn: F): (collection: T) => Promise<O[]>;
 export function mapAsyncAll<V, O>(set: Set<V>, fn: ArrFn<V, Promise<O>>): Promise<O[]>;
 export function mapAsyncAll<V, O>(arr: Array<V>, fn: ArrFn<V, Promise<O>>): Promise<O[]>;
 export function mapAsyncAll<V, O>(arr: ReadonlyArray<V>, fn: ArrFn<V, Promise<O>>): Promise<O[]>;
@@ -40,12 +40,12 @@ export function mapAsyncAll<K, V, O>(map: Map<K, V>, fn: MapFn<K, V, Promise<O>>
 export function mapAsyncAll() {
   return purry(_mapAsyncAll, arguments);
 }
-async function _mapAsyncAll<T extends Collection, F extends CollectionAsyncFn<T>, O = Awaited<ReturnType<F>>>(collection: T, fn: F): Promise<O[]> {
+async function _mapAsyncAll<T extends Collection, F extends CollectionAsyncFn<T>, O extends Awaited<ReturnType<F>>>(collection: T, fn: F): Promise<O[]> {
   return Promise.all(_map(collection, fn));
 }
 
 
-export function mapAsync<T extends Collection, F extends CollectionAsyncFn<T>, O = Awaited<ReturnType<F>>>(fn: F): (collection: T) => Promise<O[]>;
+export function mapAsync<T extends Collection, F extends CollectionAsyncFn<T>, O extends Awaited<ReturnType<F>>>(fn: F): (collection: T) => Promise<O[]>;
 export function mapAsync<V, O>(set: Set<V>, fn: ArrFn<V, Promise<O>>): Promise<O[]>;
 export function mapAsync<V, O>(arr: Array<V>, fn: ArrFn<V, Promise<O>>): Promise<O[]>;
 export function mapAsync<V, O>(arr: ReadonlyArray<V>, fn: ArrFn<V, Promise<O>>): Promise<O[]>;
@@ -54,7 +54,7 @@ export function mapAsync<K extends RecKey, V, O>(obj: Record<K, V>, fn: MapFn<K,
 export function mapAsync() {
   return purry(_mapAsync, arguments);
 }
-async function _mapAsync<T extends Collection, F extends CollectionAsyncFn<T>, O = Awaited<ReturnType<F>>>(collection: T, fn: F): Promise<O[]> {
+async function _mapAsync<T extends Collection, F extends CollectionAsyncFn<T>, O extends Awaited<ReturnType<F>>>(collection: T, fn: F): Promise<O[]> {
   if (isArray(collection) || isSet(collection)) {
     let i = 0;
     let result: O[] = [];

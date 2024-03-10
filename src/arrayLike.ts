@@ -1,8 +1,7 @@
 import { purry } from "remeda";
 import { isArray, isSet, type NonNullableArrLike, type ArrLike, type UnboxArrLike, type UnboxArrLikeRecursively } from ".";
-import type { CompareFunction } from "remeda/dist/commonjs/_types";
 
-export function first<T extends ArrLike<any>, U = UnboxArrLike<T>>(arrLike: T): U | undefined {
+export function first<T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T): U | undefined {
   if (isArray(arrLike)) {
     return arrLike[0];
   } else if (isSet(arrLike)) {
@@ -12,7 +11,7 @@ export function first<T extends ArrLike<any>, U = UnboxArrLike<T>>(arrLike: T): 
   }
 }
 
-export function last<T extends ArrLike<any>, U = UnboxArrLike<T>>(arrLike: T): U | undefined {
+export function last<T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T): U | undefined {
   if (isArray(arrLike)) {
     return arrLike[arrLike.length - 1];
   } else if (isSet(arrLike)) {
@@ -97,7 +96,7 @@ export function size<C extends ArrLike<any>>(arrLike: C): number {
 export function zip<
   T extends ArrLike<any>,
   U extends ArrLike<any>,
-  R = U extends Set<infer K> ? Set<[K, K]> : T extends Array<infer K> ? [K, K][] : never
+  R extends (U extends Set<infer K> ? Set<[K, K]> : T extends Array<infer K> ? [K, K][] : never)
 >(arrLike2: T): (arrLike: U) => R;
 export function zip<T>(set: Set<T>, set2: Set<T>): Set<[T, T]>;
 export function zip<T>(set: Set<T>, arr: T[]): Set<[T, T]>;
@@ -160,13 +159,13 @@ export function zip3<
   T extends ArrLike<any>,
   U extends ArrLike<any>,
   V extends ArrLike<any>,
-  R = U extends Set<infer K> ? Set<[K, K, K]> : T extends Array<infer K> ? [K, K, K][] : never
+  R extends (U extends Set<infer K> ? Set<[K, K, K]> : T extends Array<infer K> ? [K, K, K][] : never)
 >(arrLike2: T, arrLike3: V): (arrLike: U) => R;
 export function zip3<
   T extends ArrLike<any>,
   U extends ArrLike<any>,
   V extends ArrLike<any>,
-  R = U extends Set<infer K> ? Set<[K, K, K]> : T extends Array<infer K> ? [K, K, K][] : never
+  R extends (U extends Set<infer K> ? Set<[K, K, K]> : T extends Array<infer K> ? [K, K, K][] : never)
 >(arrLike: U, arrLike2: T, arrLike3: V): R;
 export function zip3() {
   return purry(_zip3, arguments);
@@ -195,7 +194,7 @@ export function reverse<C extends ArrLike<T>, T>(collection: C): C {
   }
 }
 
-export function flatten<T extends ArrLike<any>, U = UnboxArrLikeRecursively<T>>(arrLike: T): T extends Set<any> ? Set<U> : U[] {
+export function flatten<T extends ArrLike<any>, U extends UnboxArrLikeRecursively<T>>(arrLike: T): T extends Set<any> ? Set<U> : U[] {
   let result: any[] = [];
   if (isArray(arrLike) || isSet(arrLike)) {
     for (const item of arrLike) {
@@ -266,8 +265,9 @@ export function max<T extends ArrLike<number>>(arrLike: T): number {
   }
 }
 
+type CompareFunction<T> = (a: T, b: T) => number;
 
-export function sortBy<T extends ArrLike<any>, F extends CompareFunction<U>, U = UnboxArrLike<T>>(sorter: F): (arrLike: T) => T;
+export function sortBy<T extends ArrLike<any>, F extends CompareFunction<U>, U extends UnboxArrLike<T>>(sorter: F): (arrLike: T) => T;
 export function sortBy<T>(set: Set<T>, sorter: CompareFunction<T>): Set<T>;
 export function sortBy<T>(arr: T[], sorter: CompareFunction<T>): T[];
 export function sortBy<T>(arr: ReadonlyArray<T>, sorter: CompareFunction<T>): T[];
