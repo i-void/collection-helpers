@@ -37,6 +37,7 @@ export function mapAsyncAll<V, O>(arr: Array<V>, fn: ArrFn<V, Promise<O>>): Prom
 export function mapAsyncAll<V, O>(arr: ReadonlyArray<V>, fn: ArrFn<V, Promise<O>>): Promise<O[]>;
 export function mapAsyncAll<K, V, O>(fn: MapFn<K, V, Promise<O>>): (map: Map<K, V>) => Promise<O[]>;
 export function mapAsyncAll<K, V, O>(map: Map<K, V>, fn: MapFn<K, V, Promise<O>>): Promise<O[]>;
+export function mapAsyncAll<K extends RecKey, V, O>(obj: Record<K, V>, fn: MapFn<K, V, Promise<O>>): Promise<O[]>;
 export function mapAsyncAll() {
   return purry(_mapAsyncAll, arguments);
 }
