@@ -119,8 +119,11 @@ export type CollectionAsyncReduceFn<T, R> =
 export type Simplify<T> = { [K in keyof T]: T[K] } & {}
 
 
-
-
+export type Keys<T> =
+  T extends Map<infer K, any> ? K :
+  T extends Record<infer K, any> ? K :
+  T extends { [key: string]: any } ? keyof T :
+  never;
 
 export type Head<T extends ReadonlyArray<any>> =
   ((...t: T) => any) extends ((_: infer A, ...tail: any) => any)

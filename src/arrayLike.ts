@@ -1,7 +1,8 @@
 import { purry } from "remeda";
-import { isArray, isMap, isRecord, isSet, type ArrLike, type Collection, type InferCollectionType, type MapLike, type NonNullableArrLike, type UnboxArrLike, type UnboxArrLikeRecursively, type UnboxMapLike, type UnboxSelfMapLike } from ".";
+import { isArray, isMap, isRecord, isSet, type ArrLike, type MapLike, type NonNullableArrLike, type UnboxArrLike, type UnboxArrLikeRecursively, type UnboxSelfMapLike } from ".";
 
 export function first(): <T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T) => U | undefined;
+export function first(): <T extends MapLike<any, any>, U extends UnboxSelfMapLike<T>>(mapLike: T) => U | undefined;
 export function first<T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T): U | undefined;
 export function first<T extends MapLike<any, any>, U extends UnboxSelfMapLike<T>>(mapLike: T): U | undefined;
 export function first() {
