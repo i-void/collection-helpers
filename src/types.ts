@@ -54,6 +54,10 @@ export type UnboxMapLike<T> =
   T extends Map<infer K, infer V> ? readonly [K, V] :
   T extends Record<infer K, infer V> ? readonly [K, V] :
   never;
+export type UnboxSelfMapLike<T> =
+  T extends Map<infer K, infer V> ? Map<K, V> :
+  T extends Record<infer K, infer V> ? Partial<Record<K, V>> :
+  never;
 export type InferMapFn<T> = T extends MapFn<infer K, infer V, infer O> ? MapFn<K, V, O>: never
 
 // Commons

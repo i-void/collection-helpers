@@ -1,25 +1,52 @@
 import { purry } from "remeda";
-import { isArray, isSet, type NonNullableArrLike, type ArrLike, type UnboxArrLike, type UnboxArrLikeRecursively } from ".";
+import { isArray, isMap, isRecord, isSet, type ArrLike, type Collection, type InferCollectionType, type MapLike, type NonNullableArrLike, type UnboxArrLike, type UnboxArrLikeRecursively, type UnboxMapLike, type UnboxSelfMapLike } from ".";
 
-export function first<T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T): U | undefined {
-  if (isArray(arrLike)) {
-    return arrLike[0];
-  } else if (isSet(arrLike)) {
-    return arrLike.values().next().value;
+export function first(): <T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T) => U | undefined;
+export function first<T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T): U | undefined;
+export function first<T extends MapLike<any, any>, U extends UnboxSelfMapLike<T>>(mapLike: T): U | undefined;
+export function first() {
+  return purry(_first, arguments);
+}
+function _first(collection: any): any {
+  if (isArray(collection)) {
+    return collection[0];
+  } else if (isSet(collection)) {
+    return Array.from(collection)[0]; 
+  } else if (isMap(collection)) {
+    if (collection.size === 0) return undefined
+    const first = Array.from(collection)[0];
+    return new Map([[first[0], first[1]]]);
+  } else if (isRecord(collection)) {
+    if (Object.keys(collection).length === 0) return undefined
+    const first = Object.entries(collection)[0];
+    return { [first[0]]: first[1] };
   } else {
     throw new Error('Unsupported collection type');
   }
 }
 
-export function last<T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T): U | undefined {
-  if (isArray(arrLike)) {
-    return arrLike[arrLike.length - 1];
-  } else if (isSet(arrLike)) {
-    let result;
-    for (const item of arrLike) {
-      result = item;
-    }
-    return result;
+export function last(): <T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T) => U | undefined;
+export function last<T extends ArrLike<any>, U extends UnboxArrLike<T>>(arrLike: T): U | undefined;
+export function last<T extends MapLike<any, any>, U extends UnboxSelfMapLike<T>>(mapLike: T): U | undefined;
+export function last() {
+  return purry(_last, arguments);
+}
+export function _last(collection: any): any {
+  if (isArray(collection)) {
+    return collection[collection.length - 1];
+  } else if (isSet(collection)) {
+    const arr = Array.from(collection);
+    return arr[arr.length - 1];
+  } else if (isMap(collection)) {
+    if (collection.size === 0) return undefined;
+    const arr = Array.from(collection);
+    const last = arr[arr.length - 1];
+    return new Map([[last[0], last[1]]]);
+  } else if (isRecord(collection)) {
+    if (Object.keys(collection).length === 0) return undefined;
+    const entries = Object.entries(collection);
+    const last = entries[entries.length - 1];
+    return { [last[0]]: last[1] };
   } else {
     throw new Error('Unsupported collection type');
   }

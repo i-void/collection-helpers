@@ -9,7 +9,7 @@ describe("first", () => {
     expect(resultA).toEqual(1)
     const resultA2 = pipe(
       a,
-      first,
+      first(),
     )
     expect(resultA2).toEqual(1)
     
@@ -18,9 +18,21 @@ describe("first", () => {
     expect(resultB).toEqual(1)
     const resultB2 = pipe(
       b,
-      first,
+      first(),
     )
     expect(resultB2).toEqual(1)
+
+    const c = new Map([['a', 1], ['b', 2], ['c', 3]])
+    const resultC = first(c)
+    expect(resultC).toEqual(new Map([['a', 1]]))
+    
+    const d = { a: 1, b: 2, c: 3 }
+    const resultD = first(d)
+    expect(resultD).toEqual({ a: 1 })
+    
+    const e = ['a', 'b', 'c'] as const
+    const resultE = first(e)
+    expect(resultE).toEqual('a')
   })
 })
 
@@ -31,7 +43,7 @@ describe("last", () => {
     expect(resultA).toEqual(3)
     const resultA2 = pipe(
       a,
-      last,
+      last(),
     )
     expect(resultA2).toEqual(3)
     
@@ -40,9 +52,25 @@ describe("last", () => {
     expect(resultB).toEqual(3)
     const resultB2 = pipe(
       b,
-      last,
+      last(),
     )
     expect(resultB2).toEqual(3)
+    
+    const c = new Map([['a', 1], ['b', 2], ['c', 3]])
+    const resultC = last(c)
+    expect(resultC).toEqual(new Map([['c', 3]]))
+
+    const d = { a: 1, b: 2, c: 3 }
+    const resultD = last(d)
+    expect(resultD).toEqual({ c: 3 })
+    
+    const e = {}
+    const resultE = last(e)
+    expect(resultE === undefined).toEqual(true)
+    
+    const f = new Map()
+    const resultF = last(f)
+    expect(resultF === undefined).toEqual(true)
   })
 })
 
