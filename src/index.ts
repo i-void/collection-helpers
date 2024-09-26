@@ -10,5 +10,7 @@ export * from './prop';
 export * from './reduce';
 export * from './reject';
 export * from './select';
+export * from './find';
 export * from './typeChecks';
 export * from './types';
+export { keys } from 'remeda' 
