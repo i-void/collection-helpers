@@ -1,3 +1,5 @@
+import { purry } from "remeda";
+
 // Checks if a value is a number
 export function isNumber(value: unknown): value is number {
   return typeof value === 'number';
@@ -85,7 +87,12 @@ export function isBigInt(value: unknown): value is bigint {
   return typeof value === 'bigint';
 }
 
-export function ensure<T>(value: T | undefined | null): T {
+export function ensure<T>(value: T | undefined | null): T
+export function ensure<T>(): (value: T | undefined | null) => T
+export function ensure() {
+  return purry(_ensure, arguments); 
+}
+function _ensure<T>(value: T | undefined | null): T {
   if (isNull(value)) {
     throw new Error('Value is null');
   }
