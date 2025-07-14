@@ -69,7 +69,7 @@ export const Dict = {
             await fn({ key, value }, initialEntries.indexOf([key, value]))
           ] as [K, V2])
         }
-        return result
+        return Dict.new(result)
       },
       mapKeys<K2>(fn: (record: { key: K; value: V }, index: number) => K2) {
         return Dict.new(
@@ -100,7 +100,7 @@ export const Dict = {
             value
           ] as [K2, V])
         }
-        return result
+        return Dict.new(result)
       },
       select(
         condFn: (record: { key: K; value: V }, index: number) => boolean
@@ -134,7 +134,7 @@ export const Dict = {
             result.push([key, value] as [K, V])
           }
         }
-        return result
+        return Dict.new(result)
       },
       reject(
         condFn: (record: { key: K; value: V }, index: number) => boolean

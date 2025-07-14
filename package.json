@@ -4,7 +4,9 @@
   "description": "This is a typesafe collection helpers for TS which also includes some functions which has curried alternatives",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test",
+    "test:dict": "bun test tests/Dict.test.ts",
+    "test:list": "bun test tests/List.test.ts"
   },
   "repository": {
     "type": "git",
