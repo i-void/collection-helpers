@@ -14,4 +14,6 @@ export * from './select';
 export * from './find';
 export * from './typeChecks';
 export * from './types';
+export * from './Dict';
+export * from './List';
 export { values, mapKeys, mapValues, sample, mapToObj, pipe } from 'remeda' 
